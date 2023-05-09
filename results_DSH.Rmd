@@ -79,7 +79,7 @@ create_metric_table = function(metric_col_name, data, metric_label, order_groups
     #' @param order_groups list -> how the augmentation groups should be ordered
     #' @param order_models list -> how the models should be ordered
     #' @param model_names_from_to list -> containing two lists: change model names from (list) to model names (list)
-    #' 
+    #' @param aug_names_from_to list -> containing two lists: change augmenter names from (list) to augmenter names (list)
     #' This part goes in the Details!
   
   # create metric df 
@@ -88,19 +88,19 @@ create_metric_table = function(metric_col_name, data, metric_label, order_groups
          metric_col_name,
          augmenter = augmenter
   ) %>% 
-  filter(augmenter != "No augmentation")
+  filter(augmenter != "No augmentation") # rm single run with no augmentation
 
   # calculate scores 
   metric_df_scores <- score_to_df(metric_df, metric_col_name, "Danish names")
   
   # create performance table with p-values, standard deviation in parenthesis
   metric_table = metric_df_scores %>% arrange(factor(model, levels = order_models)) %>% 
-    mutate(mean = paste(format(round_half_up(mean, 1), digits = 1, nsmall=1)),
-           p_value_star = if_else(p_value < 0.05, "*", "", missing =""),
-           string_value = if_else(is.na(sd), paste(mean, sep=""),
+    mutate(mean = paste(format(round_half_up(mean, 1), digits = 1, nsmall=1)), # add mean scores
+           p_value_star = if_else(p_value < 0.05, "*", "", missing =""), # define star if p-val is significant
+           string_value = if_else(is.na(sd), paste(mean, sep=""), # formatting sd and p-val
                                   paste(mean,  " (", 
                                         format(round_half_up(sd, 1), digits = 1, nsmall=1), 
-                                        ")", p_value_star, sep="")),
+                                        ")", p_value_star, sep="")), 
            model = plyr::mapvalues(model, from=model_names_from_to[[1]], to=model_names_from_to[[2]]),
            augmenter = plyr::mapvalues(augmenter, from=aug_names_from_to[[1]], to=aug_names_from_to[[2]])) %>% 
     select(-c(mean, sd, p_value, p_value_star, conf_int)) %>% 
@@ -127,7 +127,7 @@ create_multiple_metric_tables <- function(metric_col_names, metric_labels, data,
   # loop through each metric_col_name and metric_label
   for (i in seq_along(metric_col_names)) {
     # call create_metric_table on the current metric_col_name and metric_label
-    current_metric_table <- create_metric_table(metric_col_names[[i]], data, metric_labels[[i]], order_groups, order_models,model_names_from_to, aug_names_from_to)
+    current_metric_table <- create_metric_table(metric_col_names[[i]], data, metric_labels[[i]], order_groups, order_models, model_names_from_to, aug_names_from_to)
     
     # add the current metric table to the list
     metric_tables[[i]] <- current_metric_table
@@ -142,7 +142,7 @@ create_multiple_metric_tables <- function(metric_col_names, metric_labels, data,
 
 ```
 
-## Define function for collapsing model names (for table)
+## Define function for collapsing model names (for table), so that it does not say model name for each metric 
 ```{r}
 # collapse rows
 collapse_rows_df <- function(df, variable){
@@ -157,13 +157,14 @@ collapse_rows_df <- function(df, variable){
 ```
 Function credits: https://stackoverflow.com/questions/51450402/how-to-collapse-groups-of-row-values-within-a-table-using-formattable 
 
+## All tables ! 
 ## Rename model and augmenters
 ```{r rename model and aug}
 # original model names
-names_from = c("spacy_large", "spacy_medium", "dacy_large", "dacy_medium", "danlp_bert", "spacy_small", "flair", "dacy_small", "polyglot", "scandi_ner")
+mdl_names_from = c("spacy_large", "spacy_medium", "dacy_large", "dacy_medium", "danlp", "spacy_small", "flair", "dacy_small", "polyglot", "scandi_ner")
 
 # new model names
-names_to = c("SpaCy large", "SpaCy medium", "DaCy large", "DaCy medium", "DaNLP BERT", "SpaCy small", "Flair", "DaCy small", "Polyglot", "ScandiNER")
+mdl_names_to = c("SpaCy large (3.4.0)", "SpaCy medium (3.4.0)", "DaCy large (0.1.0)", "DaCy medium (0.1.0)", "DaNLP BERT", "SpaCy small (3.4.0)", "Flair", "DaCy small (0.1.0)", "Polyglot", "ScandiNER")
 
 # aug names original
 aug_names_from = c("Danish names", "Muslim names", "Female names", "Male names", "Muslim female names","Muslim male names", "Unisex names") 
@@ -172,7 +173,6 @@ aug_names_from = c("Danish names", "Muslim names", "Female names", "Male names",
 aug_names_to = c("Majority all", "Minority all", "Majority Women", "Majority Men", "Minority Women", "Minority Men", "Unisex")
 ```
 
-## Tables 1 and 2!  
 ## Define order of models and groups
 ```{r}
 order_models <- c("scandi_ner","dacy_large", "dacy_medium", "dacy_small", "danlp", "flair", "spacy_large", "spacy_medium", "spacy_small", "polyglot")
@@ -180,71 +180,113 @@ order_models <- c("scandi_ner","dacy_large", "dacy_medium", "dacy_small", "danlp
 order_groups = c("Majority all", "Minority all", "Majority Men", "Minority Men", "Majority Women", "Minority Women", "Unisex")
 ```
 
-TEMP
-```{r}
-temp_models <- c("scandi_ner", "dacy_large", "dacy_medium", "dacy_small", "danlp", "flair", "spacy_large", "spacy_medium", "spacy_small", "polyglot")
-
-# original model names
-temp_names_from = c("spacy_large", "spacy_medium", "dacy_large", "dacy_medium", "danlp", "spacy_small", "flair", "dacy_small", "polyglot", "scandi_ner")
-
-# new model names
-temp_names_to = c("SpaCy large", "SpaCy medium", "DaCy large", "DaCy medium", "DaNLP BERT", "SpaCy small", "Flair", "DaCy small", "Polyglot", "ScandiNER")
-
-```
-
-### Table 2: ALL ENTS EXCL MISC
-#### Read in File ! 
+## Table 1: ALL ENTS EXCL MISC 
+### Read in Files ! 
 ```{r}
 ALL_EXCL_MISC_ents <- readbulk::read_bulk(directory = "results_DSH/ALL_EXCL_MISC", extension = ".csv")
 
 ALL_EXCL_MISC_ents = ALL_EXCL_MISC_ents %>% 
-  mutate(across(precision, ~ .x * 100),
-         across(recall, ~ .x * 100),
+  mutate(across(precision, ~ .x * 100), # mutate to go from vals such as 0.9 to 90 
+         across(recall, ~ .x * 100), 
          across(F1_score, ~ .x * 100)
          )
 ```
 
+### Table 1A: TP/FN/FP
 #### Create metric_table: Calculate aggregates and do bonferroni testing
 ```{r}
-metric_cols <- c("TP", "FN", "FP", "precision", "recall", "F1_score")
-metric_labels <- c("TP", "FN", "FP","Precision", "Recall", "F1")
+#### CREATE TABLE #### 
+metric_cols <- c("TP", "FN", "FP") # what the column names are called 
+metric_labels <- c("TP", "FN", "FP") 
 
-ALL_EXCL_MISC_TABLE <- create_multiple_metric_tables(metric_cols, metric_labels, ALL_EXCL_MISC_ents, order_groups, temp_models, list(temp_names_from, temp_names_to), list(aug_names_from, aug_names_to))
-```
+# create table 
+ALL_EXCL_MISC_TABLE_1A <- create_multiple_metric_tables(metric_cols, # what the column names are called 
+                                                     metric_labels, # what the metrics should be called in the table
+                                                     ALL_EXCL_MISC_ents, # dataframe to take from 
+                                                     order_groups, # order of groups (augmenters)
+                                                     order_models, # order of models 
+                                                     list(mdl_names_from, mdl_names_to), # how model names should be changed 
+                                                     list(aug_names_from, aug_names_to) # how the augmenter names should be changed 
+                                                     )
 
-#### Reorder 
-```{r}
+#### REORDER #### 
+
 # define new order with the actual names 
-new_order <- c("ScandiNER", "DaCy large", "DaCy medium", "DaCy small", "DaNLP BERT", "Flair", "SpaCy large", "SpaCy medium", "SpaCy small", "Polyglot")
+new_order <- c("ScandiNER", "DaCy large (0.1.0)", "DaCy medium (0.1.0)", "DaCy small (0.1.0)", "DaNLP BERT", "Flair", "SpaCy large (3.4.0)", "SpaCy medium (3.4.0)", "SpaCy small (3.4.0)", "Polyglot")
 
 # reorder so that precision and recall comes after each other 
-ALL_EXCL_MISC_TABLE <- ALL_EXCL_MISC_TABLE[order(unlist(sapply(ALL_EXCL_MISC_TABLE$Model, function(x) which(new_order == x)))),] 
+ALL_EXCL_MISC_TABLE_1A <- ALL_EXCL_MISC_TABLE_1A[order(unlist(sapply(ALL_EXCL_MISC_TABLE_1A$Model, function(x) which(new_order == x)))),] 
 ```
 
-
-#### Make Table 
+#### Make Table (Visualisation)
 ```{r}
-# TEMP REMOVE SCANDINER
-ALL_EXCL_MISC_TABLE <- ALL_EXCL_MISC_TABLE %>% filter(Model != "ScandiNER")
-
-collapse_rows_df(ALL_EXCL_MISC_TABLE, Model) %>% 
+ALL_1A <- collapse_rows_df(ALL_EXCL_MISC_TABLE_1A, Model) %>% 
   kbl(
     booktabs=T, 
     col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
-    caption = "Table 1: NER PERFORMANCE (ALL EXCL MISC)",
+    caption = "<span style='font-size:18px'>Table 1A: NER PERFORMANCE (ALL EXCL MISC). MEAN TP/FN/FP. (Bonferroni corrected for each model for each metric)</span>",
     #format="latex",
     align=c("l", rep("c", nrow(.)-1)),
-    table.attr = "style='width:30%;'"
+    table.attr = "style='width:90%;'"
     ) %>% 
+  column_spec(column=1, bold=TRUE, border_right = T, width = "6em") %>% 
+  column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
+  column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  collapse_rows() %>% 
-  kable_classic(full_width = F, html_font = "Cambria") 
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+
+ALL_1A
+```
+
+### TABLE 1B: PRECISION, RECALL, F1
+#### Create metric_table: Calculate aggregates and do bonferroni testing
+```{r}
+#### CREATE TABLE #### 
+metric_cols <- c("precision", "recall", "F1_score") 
+metric_labels <- c("Precision", "Recall", "F1") 
+
+# create table 
+ALL_EXCL_MISC_TABLE_1B <- create_multiple_metric_tables(metric_cols, # what the column names are called 
+                                                     metric_labels, # what the metrics should be called in the table
+                                                     ALL_EXCL_MISC_ents, # dataframe to take from 
+                                                     order_groups, # order of groups (augmenters)
+                                                     order_models, # order of models 
+                                                     list(mdl_names_from, mdl_names_to), # how model names should be changed 
+                                                     list(aug_names_from, aug_names_to) # how the augmenter names should be changed 
+                                                     )
+
+#### REORDER #### 
+
+# define new order with the actual names 
+new_order <- c("ScandiNER", "DaCy large (0.1.0)", "DaCy medium (0.1.0)", "DaCy small (0.1.0)", "DaNLP BERT", "Flair", "SpaCy large (3.4.0)", "SpaCy medium (3.4.0)", "SpaCy small (3.4.0)", "Polyglot")
+
+# reorder so that precision and recall comes after each other 
+ALL_EXCL_MISC_TABLE_1B <- ALL_EXCL_MISC_TABLE_1B[order(unlist(sapply(ALL_EXCL_MISC_TABLE_1B$Model, function(x) which(new_order == x)))),] 
 ```
 
 
+#### Make Table (Visualisation)
+```{r}
+ALL_1B <- collapse_rows_df(ALL_EXCL_MISC_TABLE_1B, Model) %>% 
+  kbl(
+    booktabs=T, 
+    col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
+    caption = "<span style='font-size:18px'>Table 1B: NER PERFORMANCE (ALL EXCL MISC). MEAN PRECISION/RECALL/F1. (Bonferroni corrected for each model for each metric)</span>",
+    #format="latex",
+    align=c("l", rep("c", nrow(.)-1)),
+    table.attr = "style='width:90%;'"
+    ) %>% 
+  column_spec(column=1, bold=TRUE, border_right = T, width = "6em") %>% 
+  column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
+  column_spec(3:9, width = "1em") %>%
+  add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
 
-### Table 2: PER ENTS ONLY
-#### Read in File ! 
+ALL_1B
+```
+
+## Table 2: PER ENTS ONLY
+### Read in File ! 
 ```{r read files}
 PER_ents <- readbulk::read_bulk(directory = "results_DSH/PER", extension = ".csv")
 
@@ -255,46 +297,106 @@ PER_ents = PER_ents %>%
          )
 ```
 
+### TABLE 2A: 
 #### Create metric_table: Calculate aggregates and do bonferroni testing
 ```{r}
-metric_cols <- c("TP", "FN", "FP", "precision", "recall", "F1_score")
-metric_labels <- c("TP", "FN", "FP","Precision", "Recall", "F1")
+#### CREATE TABLE #### 
+metric_cols <- c("TP", "FN", "FP")
+metric_labels <- c("TP", "FN", "FP")
 
-PER_TABLE <- create_multiple_metric_tables(metric_cols, metric_labels, PER_ents, order_groups, temp_models, list(temp_names_from, temp_names_to), list(aug_names_from, aug_names_to))
-```
+PER_TABLE_2A <- create_multiple_metric_tables(metric_cols, 
+                                           metric_labels, 
+                                           PER_ents, 
+                                           order_groups, 
+                                           order_models, 
+                                           list(mdl_names_from, mdl_names_to), 
+                                           list(aug_names_from, aug_names_to))
 
-#### Reorder 
-```{r}
+#### REORDER ####
+
 # define new order with the actual names 
-new_order <- c("ScandiNER", "DaCy large", "DaCy medium", "DaCy small", "DaNLP BERT", "Flair", "SpaCy large", "SpaCy medium", "SpaCy small", "Polyglot")
+new_order <- c("ScandiNER", "DaCy large (0.1.0)", "DaCy medium (0.1.0)", "DaCy small (0.1.0)", "DaNLP BERT", "Flair", "SpaCy large (3.4.0)", "SpaCy medium (3.4.0)", "SpaCy small (3.4.0)", "Polyglot")
+
 
 # reorder so that precision and recall comes after each other 
-PER_TABLE <- PER_TABLE[order(unlist(sapply(PER_TABLE$Model, function(x) which(new_order == x)))),] 
+PER_TABLE_2A <- PER_TABLE_2A[order(unlist(sapply(PER_TABLE_2A$Model, function(x) which(new_order == x)))),] 
 ```
 
-#### Make Table 
+#### Make Table
 ```{r}
-collapse_rows_df(PER_TABLE, Model) %>% 
+PER_2A <- collapse_rows_df(PER_TABLE_2A, Model) %>% 
   kbl(
     booktabs=T, 
     col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
-    caption = "Table 2: PER ENT PERFORMANCE",
+    caption = "<span style='font-size:18px'>Table 2A: PER ENT PERFORMANCE. MEAN TP/FN/FP. (Bonferroni corrected for each model for each metric)</span>",
     #format="latex",
     align=c("l", rep("c", nrow(.)-1)),
-    table.attr = "style='width:30%;'"
+    table.attr = "style='width:90%;'"
     ) %>% 
+  column_spec(column=1, bold=TRUE, border_right = T, width = "6em") %>% 
+  column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
+  column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  collapse_rows() %>% 
-  kable_classic(full_width = F, html_font = "Cambria") 
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+
+PER_2A
+```
+
+
+### TABLE 2B: TP/FN/FP
+#### Create metric_table: Calculate aggregates and do bonferroni testing
+```{r}
+#### CREATE TABLE #### 
+metric_cols <- c("precision", "recall", "F1_score") 
+metric_labels <- c("Precision", "Recall", "F1") 
+
+PER_TABLE_2B <- create_multiple_metric_tables(metric_cols, 
+                                           metric_labels, 
+                                           PER_ents, 
+                                           order_groups, 
+                                           order_models, 
+                                           list(mdl_names_from, mdl_names_to), 
+                                           list(aug_names_from, aug_names_to))
+
+#### REORDER ####
+
+# define new order with the actual names 
+new_order <- c("ScandiNER", "DaCy large (0.1.0)", "DaCy medium (0.1.0)", "DaCy small (0.1.0)", "DaNLP BERT", "Flair", "SpaCy large (3.4.0)", "SpaCy medium (3.4.0)", "SpaCy small (3.4.0)", "Polyglot")
+
+
+# reorder so that precision and recall comes after each other 
+PER_TABLE_2B <- PER_TABLE_2B[order(unlist(sapply(PER_TABLE_2B$Model, function(x) which(new_order == x)))),] 
+```
+
+#### Make Table
+```{r}
+PER_2B <- collapse_rows_df(PER_TABLE_2B, Model) %>% 
+  kbl(
+    booktabs=T, 
+    col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
+    caption = "<span style='font-size:18px'>Table 2B: PER ENT PERFORMANCE. MEAN TP/FN/FP. (Bonferroni corrected for each model for each metric</span>)",
+    #format="latex",
+    align=c("l", rep("c", nrow(.)-1)),
+    table.attr = "style='width:90%;'"
+    ) %>% 
+  column_spec(column=1, bold=TRUE, border_right = T, width = "6em") %>% 
+  column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
+  column_spec(3:9, width = "1em") %>%
+  add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+
+PER_2B
 ```
 
 
 
 ### Save Tables to CSV
 ```{r}
-#write_csv(both_metrics_tb1, "table_1_NER_performance_precision_recall.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1A, "2A_NER_PERFORMANCE.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1B, "2B_NER_PERFORMANCE.csv")
 
-#write_csv(both_metrics_tb2, "table_2_NER_PER_scores_precision_recall.csv")
+write_csv(PER_TABLE_2A, "2A_PER_ENTS.csv")
+write_csv(PER_TABLE_2B, "2B_PER_ENTS.csv")
 ```
 
 
