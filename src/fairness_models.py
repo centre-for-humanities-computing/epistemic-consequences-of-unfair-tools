@@ -79,8 +79,9 @@ def load_model(chosen_model):
         model_dict = {"danlp":nlp}
     
     elif chosen_model == "scandi_ner":
-        scandi_ner = spacy.blank("da")
-        scandi_ner.add_pipe("dacy/ner")
+        nlp = spacy.blank("da")
+        nlp.add_pipe("dacy/ner")
+        model_dict = {"scandi_ner":nlp}
     
     elif chosen_model == "flair":
         from danlp_spacy_flair import FlairComponent
