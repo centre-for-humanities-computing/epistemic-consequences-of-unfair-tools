@@ -10,5 +10,5 @@ da-core-news-lg @ https://github.com/explosion/spacy-models/releases/download/da
 da-core-news-md @ https://github.com/explosion/spacy-models/releases/download/da_core_news_md-3.4.0/da_core_news_md-3.4.0-py3-none-any.whl
 da-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/da_core_news_sm-3.4.0/da_core_news_sm-3.4.0-py3-none-any.whl
 nltk==3.8.1
--e git+https://github.com/centre-for-humanities-computing/danlp-spacy-flair # spacy wrapper for flair 
+git+https://github.com/centre-for-humanities-computing/danlp-spacy-flair # spacy wrapper for flair 
 spacy_wrap==1.4.2 # for danlp

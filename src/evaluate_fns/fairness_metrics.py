@@ -15,6 +15,8 @@ import pandas as pd
 # model eval
 import spacy
 
+from spacy.training import Example
+
 # import DaCyScorer
 from evaluate_fns.wrapped_spacy_scorer import DaCyScorer
 
