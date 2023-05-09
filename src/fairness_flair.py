@@ -19,8 +19,7 @@ import spacy
 from dacy.datasets import dane
 from spacy.training import Example, dont_augment
 
-# import scandiner
-# from apply_fns.apply_fn_scandi import scandi_ner
+from danlp_spacy_flair import FlairComponent
 
 # import augmentation
 from evaluate_fns.augmentation import (
@@ -107,9 +106,8 @@ def eval_fairness_metrics(
                 # apply model to augmented corpus as a pipeline
                 # notably faster than applying model to each example
                 # as it can be batched
-                _examples = ((e.x.text, e.y) for e in augmented_corpus)
-                doc_tuples = nlp.pipe(_examples, as_tuples=True)
-                augmented_corpus = [Example(x, y) for x, y in doc_tuples]
+                for e in augmented_corpus:
+                    e.predicted = nlp(e.text)
 
                 # filter augmented corpus
                 for e in augmented_corpus:
@@ -180,41 +178,26 @@ if __name__ == "__main__":
     testdata = dane(splits=["test"], redownload=True, open_unverified_connected=True)
 
     # define augmenters: augmenter, name, n repetitions
-    n = 10
+    n = 20
     augmenters = [
         (dont_augment, "No augmentation", 1),
-        # (dk_aug, "Danish names", n),
-        # (muslim_aug, "Muslim names", n),
-        # (f_aug, "Female names", n),
-        # (m_aug, "Male names", n),
-        # (muslim_f_aug, "Muslim female names", n),
-        # (muslim_m_aug, "Muslim male names", n),
-        # (unisex_aug, "Unisex names", n),
+        (dk_aug, "Danish names", n),
+        (muslim_aug, "Muslim names", n),
+        (f_aug, "Female names", n),
+        (m_aug, "Male names", n),
+        (muslim_f_aug, "Muslim female names", n),
+        (muslim_m_aug, "Muslim male names", n),
+        (unisex_aug, "Unisex names", n),
     ]
 
     # define models to run
-    model_dict = {
-        "dacy_large": "da_dacy_large_trf-0.1.0",
-        # "spacy dacy_large": "da_dacy_large_trf", # load using spacy
-        # "scandi_ner": scandi_ner
-    }
+    nlp = spacy.blank("da")
+    nlp.add_pipe("danlp_flair", last=True)
 
-    # run for only PER entity
-    eval_fairness_metrics(
-        model_dict=model_dict,
-        augmenters=augmenters,
-        dataset=testdata,
-        # ents_to_keep=["PER"],
-        outfolder=outfolder_PER,
-        filename="test",
-    )
+    model_dict = {"flair": nlp}
 
-    # run for all ents excl. MISC
-    # eval_fairness_metrics(
-    #     model_dict=model_dict,
-    #     augmenters=augmenters,
-    #     dataset=testdata,
-    #     ents_to_keep=["PER", "LOC", "ORG"],
-    #     outfolder=outfolder_ALL,
-    #     filename="ALL_EXCL_MISC",
-    # )
+     # run for only PER entity
+    eval_fairness_metrics(model_dict=model_dict, augmenters=augmenters, dataset=testdata, ents_to_keep=["PER"], outfolder=outfolder_PER, filename="PER")
+
+    # run for all ents excl. MISC 
+    eval_fairness_metrics(model_dict=model_dict, augmenters=augmenters, dataset=testdata, ents_to_keep=["PER", "LOC", "ORG"], outfolder=outfolder_ALL, filename="ALL_EXCL_MISC")
