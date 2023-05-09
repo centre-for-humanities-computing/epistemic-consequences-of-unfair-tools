@@ -1,0 +1,303 @@
+---
+title: "Robustness & Bias in NLP"
+output: html_notebook
+editor_options: 
+  chunk_output_type: console
+---
+
+This notebook contains code for producing the table in the paper. 
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(janitor)
+```
+
+# Define Functions 
+## Define Scoring Function (Pairwise Bonferroni T-tests)
+```{r scoring summary functions}
+# t-test function for the score_to_df function
+score_t_test = function(mdl, augmenter, default, data, score){
+  d = data %>% filter(model == mdl)
+
+  x = d[[score]][d$augmenter == augmenter]
+  mu = d[[score]][d$augmenter == default]
+  
+  if (length(mu) == 1){
+    t = t.test(x = x,
+           mu = mu, paired = FALSE, var.equal = FALSE,
+           conf.level = 0.95)
+  } else {
+    t = t.test(x = x,
+           y = mu, paired = FALSE, var.equal = FALSE,
+           conf.level = 0.95) 
+  }
+  return (t)
+}
+
+# score_to_df function: bonferroni adjusted t-tests for all augmentations for all models against a baseline augmentation
+score_to_df = function(data, score, baseline){
+  dfs = NULL
+  i = 1
+  for(mdl in unique(data$model)){
+    for (aug in unique(data$augmenter)){
+      v = data[[score]][data$augmenter == aug & data$model == mdl]
+      
+      if (length(v) <= 2){
+          dfs[[i]] = tibble(model=mdl, augmenter=aug, mean=v[1], sd=NA, 
+                    conf_int = "",
+                    p_value=NA)
+          i = i+1
+          next
+      }
+      
+      mu = mean(v)
+      sigma = sd(v)
+      print(paste(mdl, aug, length(v)))
+      t = score_t_test(mdl=mdl, augmenter=aug, default=baseline, data=data, score=score)
+      
+      p = p.adjust(t$p.value, method = "bonferroni", n = 6)
+
+      dfs[[i]] = tibble(model=mdl, augmenter=aug, mean=mu, sd=sigma, 
+                        conf_int = paste("(",  round(t$conf.int[1], 2),", ",  round(t$conf.int[2], 2), ")", sep = ""),
+                        p_value=p)
+      i = i+1
+    }
+  }
+  return(bind_rows(dfs))
+}
+```
+
+## Define function for calculating and creating table for chosen value 
+```{r}
+create_metric_table = function(metric_col_name, data, metric_label, order_groups, order_models, model_names_from_to, aug_names_from_to){
+    #' Create metric table with selected metric for models 
+    #'
+    #' Create metric table with selected metric within a data table.Computes t-tests as defined in the scoring function "score_to_df"
+    #' @param metric_col_name column in data -> the selected metric
+    #' @param data dataframe -> the data with the metric
+    #' @param order_groups list -> how the augmentation groups should be ordered
+    #' @param order_models list -> how the models should be ordered
+    #' @param model_names_from_to list -> containing two lists: change model names from (list) to model names (list)
+    #' 
+    #' This part goes in the Details!
+  
+  # create metric df 
+  metric_df <- data %>% 
+  select(model, 
+         metric_col_name,
+         augmenter = augmenter
+  ) %>% 
+  filter(augmenter != "No augmentation")
+
+  # calculate scores 
+  metric_df_scores <- score_to_df(metric_df, metric_col_name, "Danish names")
+  
+  # create performance table with p-values, standard deviation in parenthesis
+  metric_table = metric_df_scores %>% arrange(factor(model, levels = order_models)) %>% 
+    mutate(mean = paste(format(round_half_up(mean, 1), digits = 1, nsmall=1)),
+           p_value_star = if_else(p_value < 0.05, "*", "", missing =""),
+           string_value = if_else(is.na(sd), paste(mean, sep=""),
+                                  paste(mean,  " (", 
+                                        format(round_half_up(sd, 1), digits = 1, nsmall=1), 
+                                        ")", p_value_star, sep="")),
+           model = plyr::mapvalues(model, from=model_names_from_to[[1]], to=model_names_from_to[[2]]),
+           augmenter = plyr::mapvalues(augmenter, from=aug_names_from_to[[1]], to=aug_names_from_to[[2]])) %>% 
+    select(-c(mean, sd, p_value, p_value_star, conf_int)) %>% 
+    pivot_wider(names_from = augmenter, values_from=c(string_value)) %>% 
+    select(Model=model, all_of(aug_names_from_to[[2]])) # reorder
+  
+  # add metric col, specifying the metric 
+  Metric <- rep(metric_label, 10)
+  metric_table <- cbind(metric_table, Metric)
+  
+  # re order columns 
+  metric_table <- metric_table[, c("Model", "Metric", order_groups)]
+
+  return(metric_table)
+}
+```
+
+## Define Function For Calculating and Creating Tables for Multiple Metrics
+```{r}
+create_multiple_metric_tables <- function(metric_col_names, metric_labels, data, order_groups, order_models, model_names_from_to, aug_names_from_to) {
+  # create empty list to store metric tables
+  metric_tables <- list()
+  
+  # loop through each metric_col_name and metric_label
+  for (i in seq_along(metric_col_names)) {
+    # call create_metric_table on the current metric_col_name and metric_label
+    current_metric_table <- create_metric_table(metric_col_names[[i]], data, metric_labels[[i]], order_groups, order_models,model_names_from_to, aug_names_from_to)
+    
+    # add the current metric table to the list
+    metric_tables[[i]] <- current_metric_table
+  }
+  
+  # combine all metric tables in the list into a single dataframe
+  combined_metric_table <- do.call(rbind, metric_tables)
+  
+  # return the combined metric table
+  return(combined_metric_table)
+}
+
+```
+
+## Define function for collapsing model names (for table)
+```{r}
+# collapse rows
+collapse_rows_df <- function(df, variable){
+  group_var <- enquo(variable)
+  df %>%
+    group_by(!! group_var) %>%
+    mutate(groupRow = 1:n()) %>%
+    ungroup() %>%
+    mutate(!!quo_name(group_var) := ifelse(groupRow == 1, as.character(!! group_var), "")) %>%
+    select(-c(groupRow))
+}
+```
+Function credits: https://stackoverflow.com/questions/51450402/how-to-collapse-groups-of-row-values-within-a-table-using-formattable 
+
+## Rename model and augmenters
+```{r rename model and aug}
+# original model names
+names_from = c("spacy_large", "spacy_medium", "dacy_large", "dacy_medium", "danlp_bert", "spacy_small", "flair", "dacy_small", "polyglot", "scandi_ner")
+
+# new model names
+names_to = c("SpaCy large", "SpaCy medium", "DaCy large", "DaCy medium", "DaNLP BERT", "SpaCy small", "Flair", "DaCy small", "Polyglot", "ScandiNER")
+
+# aug names original
+aug_names_from = c("Danish names", "Muslim names", "Female names", "Male names", "Muslim female names","Muslim male names", "Unisex names") 
+
+# aug names new 
+aug_names_to = c("Majority all", "Minority all", "Majority Women", "Majority Men", "Minority Women", "Minority Men", "Unisex")
+```
+
+## Tables 1 and 2!  
+## Define order of models and groups
+```{r}
+order_models <- c("scandi_ner","dacy_large", "dacy_medium", "dacy_small", "danlp", "flair", "spacy_large", "spacy_medium", "spacy_small", "polyglot")
+
+order_groups = c("Majority all", "Minority all", "Majority Men", "Minority Men", "Majority Women", "Minority Women", "Unisex")
+```
+
+TEMP
+```{r}
+temp_models <- c("scandi_ner", "dacy_large", "dacy_medium", "dacy_small", "danlp", "flair", "spacy_large", "spacy_medium", "spacy_small", "polyglot")
+
+# original model names
+temp_names_from = c("spacy_large", "spacy_medium", "dacy_large", "dacy_medium", "danlp", "spacy_small", "flair", "dacy_small", "polyglot", "scandi_ner")
+
+# new model names
+temp_names_to = c("SpaCy large", "SpaCy medium", "DaCy large", "DaCy medium", "DaNLP BERT", "SpaCy small", "Flair", "DaCy small", "Polyglot", "ScandiNER")
+
+```
+
+### Table 2: ALL ENTS EXCL MISC
+#### Read in File ! 
+```{r}
+ALL_EXCL_MISC_ents <- readbulk::read_bulk(directory = "results_DSH/ALL_EXCL_MISC", extension = ".csv")
+
+ALL_EXCL_MISC_ents = ALL_EXCL_MISC_ents %>% 
+  mutate(across(precision, ~ .x * 100),
+         across(recall, ~ .x * 100),
+         across(F1_score, ~ .x * 100)
+         )
+```
+
+#### Create metric_table: Calculate aggregates and do bonferroni testing
+```{r}
+metric_cols <- c("TP", "FN", "FP", "precision", "recall", "F1_score")
+metric_labels <- c("TP", "FN", "FP","Precision", "Recall", "F1")
+
+ALL_EXCL_MISC_TABLE <- create_multiple_metric_tables(metric_cols, metric_labels, ALL_EXCL_MISC_ents, order_groups, temp_models, list(temp_names_from, temp_names_to), list(aug_names_from, aug_names_to))
+```
+
+#### Reorder 
+```{r}
+# define new order with the actual names 
+new_order <- c("ScandiNER", "DaCy large", "DaCy medium", "DaCy small", "DaNLP BERT", "Flair", "SpaCy large", "SpaCy medium", "SpaCy small", "Polyglot")
+
+# reorder so that precision and recall comes after each other 
+ALL_EXCL_MISC_TABLE <- ALL_EXCL_MISC_TABLE[order(unlist(sapply(ALL_EXCL_MISC_TABLE$Model, function(x) which(new_order == x)))),] 
+```
+
+
+#### Make Table 
+```{r}
+# TEMP REMOVE SCANDINER
+ALL_EXCL_MISC_TABLE <- ALL_EXCL_MISC_TABLE %>% filter(Model != "ScandiNER")
+
+collapse_rows_df(ALL_EXCL_MISC_TABLE, Model) %>% 
+  kbl(
+    booktabs=T, 
+    col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
+    caption = "Table 1: NER PERFORMANCE (ALL EXCL MISC)",
+    #format="latex",
+    align=c("l", rep("c", nrow(.)-1)),
+    table.attr = "style='width:30%;'"
+    ) %>% 
+  add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
+  collapse_rows() %>% 
+  kable_classic(full_width = F, html_font = "Cambria") 
+```
+
+
+
+### Table 2: PER ENTS ONLY
+#### Read in File ! 
+```{r read files}
+PER_ents <- readbulk::read_bulk(directory = "results_DSH/PER", extension = ".csv")
+
+PER_ents = PER_ents %>% 
+  mutate(across(precision, ~ .x * 100),
+         across(recall, ~ .x * 100),
+         across(F1_score, ~ .x * 100)
+         )
+```
+
+#### Create metric_table: Calculate aggregates and do bonferroni testing
+```{r}
+metric_cols <- c("TP", "FN", "FP", "precision", "recall", "F1_score")
+metric_labels <- c("TP", "FN", "FP","Precision", "Recall", "F1")
+
+PER_TABLE <- create_multiple_metric_tables(metric_cols, metric_labels, PER_ents, order_groups, temp_models, list(temp_names_from, temp_names_to), list(aug_names_from, aug_names_to))
+```
+
+#### Reorder 
+```{r}
+# define new order with the actual names 
+new_order <- c("ScandiNER", "DaCy large", "DaCy medium", "DaCy small", "DaNLP BERT", "Flair", "SpaCy large", "SpaCy medium", "SpaCy small", "Polyglot")
+
+# reorder so that precision and recall comes after each other 
+PER_TABLE <- PER_TABLE[order(unlist(sapply(PER_TABLE$Model, function(x) which(new_order == x)))),] 
+```
+
+#### Make Table 
+```{r}
+collapse_rows_df(PER_TABLE, Model) %>% 
+  kbl(
+    booktabs=T, 
+    col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
+    caption = "Table 2: PER ENT PERFORMANCE",
+    #format="latex",
+    align=c("l", rep("c", nrow(.)-1)),
+    table.attr = "style='width:30%;'"
+    ) %>% 
+  add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
+  collapse_rows() %>% 
+  kable_classic(full_width = F, html_font = "Cambria") 
+```
+
+
+
+### Save Tables to CSV
+```{r}
+#write_csv(both_metrics_tb1, "table_1_NER_performance_precision_recall.csv")
+
+#write_csv(both_metrics_tb2, "table_2_NER_PER_scores_precision_recall.csv")
+```
+
+
+
+
+
