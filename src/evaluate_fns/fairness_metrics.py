@@ -15,24 +15,6 @@ import pandas as pd
 # model eval
 import spacy
 
-# dataset for testing
-from dacy.datasets import dane
-from spacy.training import Example, dont_augment
-
-# import scandiner
-# from apply_fns.apply_fn_scandi import scandi_ner
-
-# import augmentation
-from evaluate_fns.augmentation import (
-    dk_aug,
-    f_aug,
-    m_aug,
-    muslim_aug,
-    muslim_f_aug,
-    muslim_m_aug,
-    unisex_aug,
-)
-
 # import DaCyScorer
 from evaluate_fns.wrapped_spacy_scorer import DaCyScorer
 
@@ -166,4 +148,3 @@ def eval_fairness_metrics(
 
         # save to csv
         scores.to_csv(f"{outfolder}/{mdl}_{filename}_fairness.csv")
-        

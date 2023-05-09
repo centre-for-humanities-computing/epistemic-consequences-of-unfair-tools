@@ -11,6 +11,10 @@ For the optional arguments, you can write the following to chose between model f
 Where -m is to choose between model frameworks
 '''
 
+# utils
+import argparse
+import pathlib 
+
 # import ssl certificate to download models
 import ssl
 ssl._create_default_https_context = ssl._create_unverified_context
@@ -18,11 +22,9 @@ ssl._create_default_https_context = ssl._create_unverified_context
 # import packages
 import spacy
 import dacy
-from dacy.datasets import dane
 
-# utils
-import argparse
-import pathlib 
+# dataset for testing
+from dacy.datasets import dane
 
 # add custom modules 
 import sys
@@ -30,7 +32,17 @@ module_path = pathlib.Path(__file__).parents[0] / "evaluate_fns"
 sys.path.append(module_path)
 
 # import augmenters, performance function
-from evaluate_fns.augmentation import dk_aug, muslim_aug, f_aug, m_aug, muslim_f_aug, muslim_m_aug, unisex_aug
+from spacy.training import Example, dont_augment
+from evaluate_fns.augmentation import (
+    dk_aug,
+    f_aug,
+    m_aug,
+    muslim_aug,
+    muslim_f_aug,
+    muslim_m_aug,
+    unisex_aug,
+)
+
 from evaluate_fns.fairness_metrics import eval_fairness_metrics
 
 def input_parse():
@@ -67,8 +79,8 @@ def load_model(chosen_model):
         model_dict = {"danlp":nlp}
     
     elif chosen_model == "scandi_ner":
-        from apply_fns.apply_fn_scandi import scandi_ner
-        model_dict = {"scandi_ner": scandi_ner}   
+        scandi_ner = spacy.blank("da")
+        scandi_ner.add_pipe("dacy/ner")
     
     elif chosen_model == "flair":
         from danlp_spacy_flair import FlairComponent
@@ -93,8 +105,9 @@ def main():
     testdata = dane(splits=["test"], redownload=True, open_unverified_connected=True)
 
     # define augmenters: augmenter, name, n repetitions 
-    n = 1
+    n = 20
     augmenters = [
+        (dont_augment, "No augmentation", 1), # keep a no augmentation as baseline to keep an eye on pipeline working as expected
         (dk_aug, "Danish names", n),
         (muslim_aug, "Muslim names", n),
         (f_aug, "Female names", n),
