@@ -5,3 +5,4 @@ Morfessor==2.0.6
 pandas==1.5.3
 spacy==3.4.4
 torch==1.13.1
+git+https://github.com/centre-for-humanities-computing/spacy_polyglot

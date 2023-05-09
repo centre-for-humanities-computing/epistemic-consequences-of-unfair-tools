@@ -87,8 +87,8 @@ def load_model(chosen_model):
         nlp = spacy.blank("da")
         nlp.add_pipe("danlp_flair", last=True)
         model_dict = {"flair": nlp}
-
-    return model_dict 
+    
+    return model_dict
 
 def main():
     # define args
