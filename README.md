@@ -1,6 +1,6 @@
 # Accuracy is not all you need: Fairness Metrics in Danish NER
 
-This repository contains the code used to produce the results in the paper "Accuracy is Not All You Need" by [Lassen et al. (2023)](https://aclanthology.org/2023.latechclfl-1.13/). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
+This repository contains the code used to produce the results in the paper "Accuracy is Not All You Need" by Lassen et al. (forthcoming). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
 
 The project investigates X.
 
