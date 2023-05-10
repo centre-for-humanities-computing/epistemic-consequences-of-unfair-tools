@@ -393,10 +393,10 @@ PER_2B
 ### Save Tables to CSV
 ```{r}
 write_csv(ALL_EXCL_MISC_TABLE_1A, "tables/1A_NER_PERFORMANCE.csv")
-write_csv(ALL_EXCL_MISC_TABLE_1B, "1B_NER_PERFORMANCE.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1B, "tables/1B_NER_PERFORMANCE.csv")
 
-write_csv(PER_TABLE_2A, "2A_PER_ENTS.csv")
-write_csv(PER_TABLE_2B, "2B_PER_ENTS.csv")
+write_csv(PER_TABLE_2A, "tables/2A_PER_ENTS.csv")
+write_csv(PER_TABLE_2B, "tables/2B_PER_ENTS.csv")
 ```
 
 
@@ -416,7 +416,7 @@ print(ALL_EXCL_MISC_TABLE_1A)
 ```
 
 ```{r}
-write_csv(ALL_EXCL_MISC_TABLE_1A, "1A_NER_PERF_WITHOUT_SD.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1A, "tables/1A_NER_PERF_WITHOUT_SD.csv")
 ```
 
 
