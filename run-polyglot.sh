@@ -19,6 +19,7 @@ pip install --no-binary=:pyicu: pyicu
 
 # packages
 pip install -r requirements/requirements-polyglot.txt
+pip install git+https://github.com/centre-for-humanities-computing/spacy_polyglot
 
 echo -e "[INFO:] Setup complete ..." # user msg
 
