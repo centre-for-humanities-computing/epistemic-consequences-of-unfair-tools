@@ -1,5 +1,5 @@
 ---
-title: "Robustness & Bias in NLP"
+title: "Tables in 'Accuracy Is Not All You Need', Extracting Fairness Metrics (TP/FN/FP/PRECISION/RECALL/F1_SCORE)"
 output: html_notebook
 editor_options: 
   chunk_output_type: console
@@ -183,7 +183,7 @@ order_groups = c("Majority all", "Minority all", "Majority Men", "Minority Men",
 ## Table 1: ALL ENTS EXCL MISC 
 ### Read in Files ! 
 ```{r}
-ALL_EXCL_MISC_ents <- readbulk::read_bulk(directory = "results_DSH/ALL_EXCL_MISC", extension = ".csv")
+ALL_EXCL_MISC_ents <- readbulk::read_bulk(directory = "results/ALL_EXCL_MISC", extension = ".csv")
 
 ALL_EXCL_MISC_ents = ALL_EXCL_MISC_ents %>% 
   mutate(across(precision, ~ .x * 100), # mutate to go from vals such as 0.9 to 90 
@@ -233,7 +233,7 @@ ALL_1A <- collapse_rows_df(ALL_EXCL_MISC_TABLE_1A, Model) %>%
   column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
   column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped", latex_options ="scale_down")
 
 ALL_1A
 ```
@@ -272,7 +272,7 @@ ALL_1B <- collapse_rows_df(ALL_EXCL_MISC_TABLE_1B, Model) %>%
     booktabs=T, 
     col.names = c("Model", "Metric", "Majority", "Minority", "Majority", "Minority", "Majority", "Minority", "Majority"),
     caption = "<span style='font-size:18px'>Table 1B: NER PERFORMANCE (ALL EXCL MISC). MEAN PRECISION/RECALL/F1. (Bonferroni corrected for each model for each metric)</span>",
-    #format="latex",
+   #format="latex",
     align=c("l", rep("c", nrow(.)-1)),
     table.attr = "style='width:90%;'"
     ) %>% 
@@ -280,7 +280,7 @@ ALL_1B <- collapse_rows_df(ALL_EXCL_MISC_TABLE_1B, Model) %>%
   column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
   column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped", latex_options ="scale_down")
 
 ALL_1B
 ```
@@ -288,7 +288,7 @@ ALL_1B
 ## Table 2: PER ENTS ONLY
 ### Read in File ! 
 ```{r read files}
-PER_ents <- readbulk::read_bulk(directory = "results_DSH/PER", extension = ".csv")
+PER_ents <- readbulk::read_bulk(directory = "results/PER", extension = ".csv")
 
 PER_ents = PER_ents %>% 
   mutate(across(precision, ~ .x * 100),
@@ -337,7 +337,7 @@ PER_2A <- collapse_rows_df(PER_TABLE_2A, Model) %>%
   column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
   column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped", latex_options ="scale_down")
 
 PER_2A
 ```
@@ -383,7 +383,7 @@ PER_2B <- collapse_rows_df(PER_TABLE_2B, Model) %>%
   column_spec(column=2, bold=TRUE, border_right = T, width = "4em") %>% 
   column_spec(3:9, width = "1em") %>%
   add_header_above(c(" " = 1, " " = 1, "All" = 2, "Men" = 2, "Women" = 2, "Unisex"=1)) %>% 
-  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped")
+  kable_classic(full_width = T, html_font = "Cambria", font_size = 16, "striped", latex_options ="scale_down")
 
 PER_2B
 ```
@@ -392,14 +392,31 @@ PER_2B
 
 ### Save Tables to CSV
 ```{r}
-write_csv(ALL_EXCL_MISC_TABLE_1A, "2A_NER_PERFORMANCE.csv")
-write_csv(ALL_EXCL_MISC_TABLE_1B, "2B_NER_PERFORMANCE.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1A, "1A_NER_PERFORMANCE.csv")
+write_csv(ALL_EXCL_MISC_TABLE_1B, "1B_NER_PERFORMANCE.csv")
 
 write_csv(PER_TABLE_2A, "2A_PER_ENTS.csv")
 write_csv(PER_TABLE_2B, "2B_PER_ENTS.csv")
 ```
 
 
+## Remove SD and Stars for raw vals 
+```{r}
+# define a function to remove parentheses and stars from a string
+remove_parentheses_and_star <- function(x) {
+  gsub("\\s*\\([^\\)]+\\)|\\*", "", x)
+}
+columns <- c("Majority all", "Minority all", "Majority Women", "Majority Men", "Minority Women", "Minority Men", "Unisex")
 
+# apply the function to multiple columns using lapply()
+ALL_EXCL_MISC_TABLE_1A[, columns] <- lapply(ALL_EXCL_MISC_TABLE_1A[, columns], remove_parentheses_and_star)
+
+# print the updated dataframe
+print(ALL_EXCL_MISC_TABLE_1A)
+```
+
+```{r}
+write_csv(ALL_EXCL_MISC_TABLE_1A, "1A_NER_PERF_WITHOUT_SD.csv")
+```
 
 
