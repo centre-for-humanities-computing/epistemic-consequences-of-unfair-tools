@@ -1,16 +1,23 @@
 # Accuracy is not all you need: Fairness Metrics in Danish NER
 
-This repository contains the code used to produce the results in the paper "Accuracy is Not All You Need" by Lassen et al. (forthcoming). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
+This repository contains the code used to produce the results in the paper "Accuracy is Not All You Need" by [Lassen et al. (2023)](https://aclanthology.org/2023.latechclfl-1.13/). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
 
-**Add sentence about the purpose of the project** (preferably closely linked to the abstract)
+The project investigates X.
 
-For instructions on how to reproduce the results, please refer to the [Pipeline]() section.
+For instructions on how to reproduce the results, please refer to the [Pipeline](https://github.com/centre-for-humanities-computing/accuracy-is-not-all-you-need#pipeline) section.
 
 ## Project Structure 
-The repository has the following structure: 
-```
-
-```
+The repository has the following directory structure:
+| <div style="width:120px"></div>| Description |
+|---------|:-----------|
+| ```name_lists``` | Contains (raw) name lists used for data augmentation|
+| ```requirements``` | Requirements file for all models, seperate files for **Polyglot** and **DaCy** |
+| ```results``` | Results from all model evaluations saved as CSV files|
+| ```src```  | Scripts for extracting metrics for all models (```fairness_XX.py```). Also has helper modules for preprocessing name lists (```process_names```) and augmenting names + extracting metrics  (```evaluate_fns```).|
+| ```results.md``` | Rmarkdown for producing tables in the paper |
+| ```run-models.sh``` | Installs virtual enviroment and necessary requirements to run **SpaCy**, **DaNLP BERT**, **Flair** and **ScandiNER** models|
+| ```run-dacy.sh``` | Installs virtual enviroment and necessary requirements to run **DaCy** models|
+| ```run-polyglot.sh``` | Installs virtual enviroment and necessary requirements to run **Polyglot** model|
 
 ### Danish Language Models 
 The following models are evaluated:
@@ -28,6 +35,26 @@ The following models are evaluated:
 * [Polyglot](https://polyglot.readthedocs.io/en/latest/NamedEntityRecognition.html)
 
 ## Pipeline 
+The pipeline has been built on Ubuntu ([UCloud](https://cloud.sdu.dk/)). 
+
+For models **SpaCy**, **DaNLP BERT**, **Flair** and **ScandiNER**, run: 
+```
+bash run-models.sh
+```
+
+For the three **DaCy** models, run: 
+```
+bash run-dacy.sh
+```
+The ```run-models.sh``` and ```run-dacy.sh``` scripts will install requirements and run models in environments called ```env``` and ```dacyenv```, respectively.
+
+Finally, for **Polyglot**, run: 
+```
+sudo bash run-polyglot.sh
+```
+**NB! Notice that it is necessary to run Polyglot with sudo as the setup requires certain devtools that will not be installed otherwise. Run at own risk!**
+
+The ```polyglot.sh``` script will both install devtools, packages and run the evaluation of the model in a seperately created environment called ```polyenv```. 
 
 ## Acknowledgements
-The name augmentation was performed using [augmenty](https://kennethenevoldsen.github.io/augmenty/). 
+The name augmentation was performed using the package [augmenty](https://kennethenevoldsen.github.io/augmenty/). 
