@@ -54,7 +54,7 @@ sudo bash run-polyglot.sh
 ```
 **NB! Notice that it is necessary to run Polyglot with sudo as the setup requires certain devtools that will not be installed otherwise. Run at own risk!**
 
-The ```polyglot.sh``` script will both install devtools, packages and run the evaluation of the model in a seperately created environment called ```polyenv```. 
+The ```run-polyglot.sh``` script will both install devtools, packages and run the evaluation of the model in a seperately created environment called ```polyenv```. 
 
 ## Acknowledgements
 The name augmentation was performed using the package [augmenty](https://kennethenevoldsen.github.io/augmenty/). 
