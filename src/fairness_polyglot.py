@@ -172,8 +172,8 @@ if __name__ == "__main__":
     path = pathlib.Path(__file__)
 
     # fairness metrics paths
-    outfolder_PER = path.parents[1] / "results_DSH" / "PER"
-    outfolder_ALL = path.parents[1] / "results_DSH" / "ALL_EXCL_MISC"
+    outfolder_PER = path.parents[1] / "results" / "PER"
+    outfolder_ALL = path.parents[1] / "results" / "ALL_EXCL_MISC"
 
     # import data set
     testdata = dane(splits=["test"], redownload=True, open_unverified_connected=True)
