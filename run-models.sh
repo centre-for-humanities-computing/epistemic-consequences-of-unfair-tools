@@ -19,7 +19,7 @@ echo -e "[INFO:] Evaluating Scandi-NER ..." # user msg
 python3.9 src/fairness_models.py -m scandi_ner
 
 echo -e "[INFO:] Evaluating flair ..." # user msg
-python3.9 src/fairness_models.py -m flair
+python3.9 src/fairness_flair.py
 
 echo -e "[INFO:] Evaluating DaNLP BERT ..." # user msg
 python3.9 src/fairness_models.py -m danlp 

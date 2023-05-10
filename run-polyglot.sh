@@ -25,7 +25,7 @@ echo -e "[INFO:] Setup complete ..." # user msg
 # run polyglot model 
 echo -e "[INFO:] Evaluating polyglot ..." # user msg
 
-python3.9 src/fairness_models.py -m polyglot
+python3.9 src/fairness_polyglot.py
 
 echo -e "[INFO:] Evaluation done! Results saved ..." # user msg
 

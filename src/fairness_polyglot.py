@@ -1,6 +1,6 @@
 """
-Script containing the pipeline for extracting fairness metrics 
-Used in all evaluate_XX.py scripts. 
+Script to get fairness metrics (TP/FN/FP/PRECISION/RECALL/F1_SCORE) from Polyglot in a NER task 
+on the DaNE test dataset when running several data augmentations on first & last names [PER] (e.g., majority vs minority names)
 """
 
 # utils
