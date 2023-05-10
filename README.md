@@ -12,7 +12,7 @@ The repository has the following directory structure:
 |---------|:-----------|
 | ```name_lists``` | Contains (raw) name lists used for data augmentation|
 | ```requirements``` | Requirements file for all models, seperate files for **Polyglot** and **DaCy** |
-| ```results``` | Results from all model evaluations saved as CSV files|
+| ```results``` | Results from all model runs saved as CSV files|
 | ```src```  | Scripts for extracting metrics for all models (```fairness_XX.py```). Also has helper modules for preprocessing name lists (```process_names```) and augmenting names + extracting metrics  (```evaluate_fns```).|
 | ```results.md``` | Rmarkdown for producing tables in the paper |
 | ```run-models.sh``` | Installs virtual enviroment and necessary requirements to run **SpaCy**, **DaNLP BERT**, **Flair** and **ScandiNER** models|
