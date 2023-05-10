@@ -1,16 +1,19 @@
 #!/bin/bash
 
-# evaluate all models except 
+# EVALUATE ALL MODELS EXCEPT POLYGLOT AND DACY MODELS 
 
-# activate virtual environment (NB. will only work if you run 'bash setup.sh' first!!)
+# create and activate virtual environment
+echo -e "[INFO:] Creating virtual environment 'env' and installing necessary requirements..." # user msg
+python3.9 -m venv env
 source ./env/bin/activate
+
+pip install -r requirements/requirements.txt # install 
+
+echo -e "[INFO:] Setup complete!" # user msg 
 
 # evaluating models 
 echo -e "[INFO:] Evaluating SpaCy models ..." # user msg
 python3.9 src/fairness_models.py -m spacy
-
-echo -e "[INFO:] Evaluating DaCy models ..." # user msg
-python3.9 src/fairness_models.py -m dacy
 
 echo -e "[INFO:] Evaluating Scandi-NER ..." # user msg
 python3.9 src/fairness_models.py -m scandi_ner
