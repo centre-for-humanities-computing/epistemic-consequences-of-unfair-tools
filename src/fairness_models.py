@@ -1,12 +1,12 @@
 '''
-Script to get fairness metrics (TP/TN/FP/PRECISION/RECALL/F1_SCORE) on all models (except polyglot) in a NER task 
+Script to get fairness metrics (TP/FN/FP/PRECISION/RECALL/F1_SCORE) from all models (except polyglot and flair) in a NER task 
 on the DaNE test dataset when running several data augmentations on first & last names [PER] (e.g., majority vs minority names)
 
-Run script in terminal by typing: 
+Run script in terminal by typing (after running pip install -r requirements.txt)
     python src/evaluate_models.py -m chosen_model
 
 For the optional arguments, you can write the following to chose between model frameworks:
-    -m: 'spacy', 'dacy', 'scandi_ner', 'flair', 'danlp' 
+    -m: 'spacy', 'dacy', 'scandi_ner', 'danlp' 
 
 Where -m is to choose between model frameworks
 '''
@@ -82,12 +82,6 @@ def load_model(chosen_model):
         nlp = spacy.blank("da")
         nlp.add_pipe("dacy/ner")
         model_dict = {"scandi_ner":nlp}
-    
-    elif chosen_model == "flair":
-        from danlp_spacy_flair import FlairComponent
-        nlp = spacy.blank("da")
-        nlp.add_pipe("danlp_flair", last=True)
-        model_dict = {"flair": nlp}
     
     return model_dict
 
