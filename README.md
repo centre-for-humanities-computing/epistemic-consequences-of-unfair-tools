@@ -2,12 +2,12 @@
 
 This repository contains the code used to produce the results in the paper "Epistemic consequences of unfair tools" by Lassen et al. (forthcoming). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
 
-The project examines representational biases in Danish language models (see [list](https://github.com/centre-for-humanities-computing/Danish-NER-bias#danish-language-models)) used for Named Entity Recognition (NER) through the lens of intersectionality.
+The project examines representational biases in Danish language models (see [list](https://github.com/centre-for-humanities-computing/epistemic-consequences-of-unfair-tools#danish-language-models)) used for Named Entity Recognition (NER) through the lens of intersectionality.
 The experimental pipeline presented in this repository investigates differences in performance scores across all known Named Entity Recognition (NER) frameworks. This is achieved by applying a data augmentation technique, namely augmenting PERSON entities in the [DaNe](https://aclanthology.org/2020.lrec-1.565/) test set on gender-divided name lists for both majority and minority names. 
 
 In the paper, these results are further analyzed by utilising fairness measures from the field of algorithmic fairness. The results show that only the models ScandiNER and DaCy large are compliant with the fairness measures in question.
 
-For instructions on how to reproduce the results, please refer to the [Pipeline](https://github.com/centre-for-humanities-computing/accuracy-is-not-all-you-need#pipeline) section.
+For instructions on how to reproduce the results, please refer to the [Pipeline](https://github.com/centre-for-humanities-computing/epistemic-consequences-of-unfair-tools#pipeline) section.
 
 ## Project Structure 
 The repository has the following directory structure:
