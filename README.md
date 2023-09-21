@@ -1,8 +1,11 @@
-# Accuracy is not all you need: Fairness Metrics in Danish NER
+# Epistemic consequences of unfair tools
 
-This repository contains the code used to produce the results in the paper "Accuracy is Not All You Need" by Lassen et al. (forthcoming). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
+This repository contains the code used to produce the results in the paper "Epistemic consequences of unfair tools" by Lassen et al. (forthcoming). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
 
-The project investigates X.
+The project examines representational biases in Danish language models (see [list](https://github.com/centre-for-humanities-computing/Danish-NER-bias#danish-language-models)) used for Named Entity Recognition (NER) through the lens of intersectionality.
+The experimental pipeline presented in this repository investigates differences in performance scores across all known Named Entity Recognition (NER) frameworks. This is achieved by applying a data augmentation technique, namely augmenting PERSON entities in the [DaNe](https://aclanthology.org/2020.lrec-1.565/) test set on gender-divided name lists for both majority and minority names. 
+
+In the paper, these results are further analyzed by utilising fairness measures from the field of algorithmic fairness. The results show that only the models ScandiNER and DaCy large are compliant with the fairness measures in question.
 
 For instructions on how to reproduce the results, please refer to the [Pipeline](https://github.com/centre-for-humanities-computing/accuracy-is-not-all-you-need#pipeline) section.
 
@@ -11,22 +14,22 @@ The repository has the following directory structure:
 | <div style="width:120px"></div>| Description |
 |---------|:-----------|
 | ```name_lists``` | Contains (raw) name lists used for data augmentation|
-| ```requirements``` | Requirements file for all models, seperate files for **Polyglot** and **DaCy** |
+| ```requirements``` | Requirements file for all models, separate files for **Polyglot** and **DaCy** |
 | ```results``` | Results from all model runs saved as CSV files|
 | ```src```  | Scripts for extracting metrics for all models (```fairness_XX.py```). Also has helper modules for preprocessing name lists (```process_names```) and augmenting names + extracting metrics  (```evaluate_fns```).|
 | ```tables``` | CSV files containing tables of all models with aggregated metrics (A: TP/FP/FN, B: Precision/Recall/F1) |
 | ```results.md``` | Rmarkdown for producing tables in the paper |
-| ```run-models.sh``` | Installs virtual enviroment and necessary requirements to run **SpaCy**, **DaNLP BERT**, **Flair** and **ScandiNER** models|
-| ```run-dacy.sh``` | Installs virtual enviroment and necessary requirements to run **DaCy** models|
-| ```run-polyglot.sh``` | Installs virtual enviroment and necessary requirements to run **Polyglot** model|
+| ```run-models.sh``` | Installs virtual environment and necessary requirements to run **SpaCy**, **DaNLP BERT**, **Flair** and **ScandiNER** models|
+| ```run-dacy.sh``` | Installs virtual environment and necessary requirements to run **DaCy** models|
+| ```run-polyglot.sh``` | Installs virtual environment and necessary requirements to run **Polyglot** model|
 
 ### Danish Language Models 
 The following models are evaluated:
 * [ScandiNER](https://huggingface.co/saattrupdan/nbailab-base-ner-scandi)
 * [DaCy models](https://github.com/centre-for-humanities-computing/DaCy)
-    * DaCY large (da_dacy_large_trf-0.1.0)
+    * DaCy large (da_dacy_large_trf-0.1.0)
     * DaCy medium (da_dacy_medium_trf-0.1.0)
-    * DaCY small (da_dacy_small_trf-0.1.0)
+    * DaCy small (da_dacy_small_trf-0.1.0)
 * [DaNLP BERT](https://danlp-alexandra.readthedocs.io/en/stable/docs/tasks/ner.html#bert)
 * [Flair](https://github.com/flairNLP/flair)
 * [Spacy models](https://spacy.io/models/da)
