@@ -1,8 +1,9 @@
 # Epistemic consequences of unfair tools
 
-This repository contains the code used to produce the results in the paper ["Epistemic consequences of unfair tools" by Lassen et al. (2024)](https://academic.oup.com/dsh/advance-article/doi/10.1093/llc/fqad091/7582215). It builds upon the work done in the code repository [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias).
+This repository contains the code used to produce the results in the paper ["Epistemic consequences of unfair tools" by Lassen et al. (2024)](https://doi.org/10.1093/llc/fqad091). It builds upon earlier work done in [Lassen et al. (2023)](10.18653/v1/2023.latechclfl-1.13) (for which see also the following repo: [Danish-NER-Bias](https://github.com/centre-for-humanities-computing/Danish-NER-bias)).
 
 The project examines representational biases in Danish language models (see [list](https://github.com/centre-for-humanities-computing/epistemic-consequences-of-unfair-tools#danish-language-models)) used for Named Entity Recognition (NER) through the lens of intersectionality.
+
 The experimental pipeline presented in this repository investigates differences in performance scores across all known Named Entity Recognition (NER) frameworks. This is achieved by applying a data augmentation technique, namely augmenting PERSON entities in the [DaNe](https://aclanthology.org/2020.lrec-1.565/) test set on gender-divided name lists for both majority and minority names. 
 
 In the paper, these results are further analyzed by utilising fairness measures from the field of algorithmic fairness. The results show that only the models ScandiNER and DaCy large are compliant with the fairness measures in question.
